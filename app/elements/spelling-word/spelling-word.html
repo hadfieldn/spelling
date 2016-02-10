@@ -41,14 +41,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if (this.word) {
         var msg = this.msg = new SpeechSynthesisUtterance();
         var voices = window.speechSynthesis.getVoices();
-        msg.voice = voices[0];
-        msg.voiceURI = 'native';
-        msg.volume = 1; // 0 to 1
+        // msg.voice = voices[0];
+        // msg.voiceURI = 'native';
+        // msg.volume = 1; // 0 to 1
         msg.rate = .75; // 0.1 to 10
-        msg.pitch = 1; // 0 to 2
+        // msg.pitch = 1; // 0 to 2
         //msg.text = 'the square root of [[pbas +4]] 2 [[char LTRL]]a[[char NORM]] to the [[pbas +4]] 14 [[char LTRL]]x[[char NORM]]';
 
-        msg.text = 'The word is [[slnc 50]] [[emph +]]' + this.word + '[[emph -]].';
+        msg.text = 'The word is [[emph +]]' + this.word + '[[emph -]].';
         msg.lang = 'en-US';
 
         msg.onend = function (event) {
