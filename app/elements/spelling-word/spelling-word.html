@@ -47,12 +47,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     speak: function () {
       if (this.word) {
-        _msg.text = 'The word is [[emph +]] "' + this.word + '" [[emph -]].';
+        _msg.text = 'The word is "' + this.word + '".';
         window.speechSynthesis.speak(_msg);
       }
     },
     spell: function () {
-      _msg.text = '[[char LTRL]]' + this.word + '[[char NORM]] ' + this.word + '.';
+      _msg.text = this.word.split('').join(', ') + ', ' + this.word;
       window.speechSynthesis.speak(_msg);
     }
   });
