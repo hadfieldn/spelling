@@ -1,0 +1,101 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="spelling-word-input">
+  <template>
+    <style>
+      :host {
+        width: 100%;
+      }
+      input {
+        width: 100%;
+        font-size: 10vw;
+        font-weight: 700;
+        font-family: 'Rokitt', 'Courier', sans-serif;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        outline: none;
+        text-align: center;
+        transition: transform .5s, opacity .5s;
+        color: var(--spelling-word-text-color);
+      }
+      input:focus {
+      }
+
+      :host[is-correct] input {
+        transform: scale(3, 3);
+        opacity: 0;
+      }
+      iron-icon {
+    </style>
+    <div input-container>
+      <iron-a11y-keys keys="enter" on-keys-pressed="_handleSubmit"></iron-a11y-keys>
+      <input is="iron-input" id="input" bind-value="{{response}}" autofocus size="12">
+    </div>
+  </template>
+</dom-module>
+<script>
+(function() {
+  Polymer({
+    is: 'spelling-word-input',
+
+    properties: {
+      word: {
+        type: String,
+        observer: '_handleNewWord'
+      },
+      response: {
+        type: String,
+        notify: true
+      },
+      isCorrect: {
+        type: Boolean,
+        notify: true,
+        readOnly: true,
+        reflectToAttribute: true
+      },
+      msg: Object
+    },
+    ready: function () {
+      this.msg = new SpeechSynthesisUtterance();
+    },
+    _handleNewWord: function (newVal, oldVal) {
+      this._setIsCorrect(false);
+    },
+    _handleSubmit: function (event, data) {
+      if (this.response === this.word) {
+        this.async(function () {
+          console.log('Correct!');
+          var msg = this.msg;
+          msg.text = 'Correct!';
+          window.speechSynthesis.speak(msg);
+          this.async(function () {
+            this._setIsCorrect(true);
+          }, 500);
+          this.async(function () {
+            this.fire('correct');
+            this.response = '';
+          }, 2000);
+        }, 50);
+      } else {
+        var msg = this.msg;
+        msg.text = 'Try again.';
+        window.speechSynthesis.speak(msg);
+      }
+    },
+    focus: function () {
+      this.$.input.focus();
+    }
+  });
+})();
+</script>

@@ -1,0 +1,218 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="spelling-list">
+  <template>
+    <style>
+      :root {
+        --primaryColor: blue;
+        --backgroundColor: #fff8ad;
+        --spellingWordColor: red;
+      }
+      :host {
+        display: block;
+        margin-top: 0;
+        margin-left: auto;
+        margin-right: auto;
+        width: 80%;
+      }
+      iron-icon {
+        width: 30px;
+        height: 30px;
+        color: var(--primaryColor);
+        display: block;
+        @apply(--layout-self-center);
+        border: 1px solid;
+        border-color: var(--primaryColor);
+        padding: 6px;
+        border-radius: 5px;
+        margin-top: 20px;
+        margin: 20px;
+      }
+      iron-icon:hover {
+        background: var(--primaryColor);
+        color: var(--backgroundColor);
+      }
+      [input-container] {
+        @apply(--layout-vertical);
+      }
+      [buttons] {
+        margin-top: 20px;
+        @apply(--layout-horizontal);
+        @apply(--layout-self-center);
+      }
+      spelling-word-input {
+        --spelling-word-text-color: var(--spellingWordColor);
+      }
+      paper-slider {
+        width: 100%;
+        --paper-slider-active-color: var(--spellingWordColor);
+        --paper-slider-knob-start-color: var(--spellingWordColor);
+        --paper-slider-knob-start-border-color: var(--spellingWordColor);
+        --paper-slider-knob-color: var(--spellingWordColor);
+        --paper-slider-pin-color: var(--spellingWordColor);
+        margin-top: 20px;
+      }
+      paper-tabs {
+        margin-bottom: 100px;
+        color: var(--primaryColor);
+        background: var(--backgroundColor);
+        --paper-tabs-selection-bar-color: var(--primaryColor);
+      }
+      paper-tab:not(.iron-selected) {
+        opacity: 0.6;
+      }
+
+      [slider-word] {
+        opacity: 0;
+        text-align: center;
+        font-family: 'Rokitt', 'Courier', sans-serif;
+        font-size: 20px;
+        color: var(--spellingWordColor);
+        transition: opacity 0.5s;
+      }
+      [slider-word][pressed] {
+        opacity: 1;
+
+      }
+
+    </style>
+
+    <iron-ajax
+      auto
+      url="/spelling-list.json"
+      handle-as="json"
+      on-response="handleResponse"
+      on-error="handleError"
+      last-response="{{spellingList}}"
+      debounce-duration="300"></iron-ajax>
+
+    <div input-container>
+      <paper-tabs selected="{{currentList}}" on-iron-select="_handleListChange">
+        <template is="dom-repeat" items="[[spellingList]]">
+          <paper-tab>[[_listName(index)]]</paper-tab>
+        </template>
+      </paper-tabs>
+      <spelling-word id="spellingWord" word="[[currentWord]]"></spelling-word>
+      <spelling-word-input id="spellingWordInput" word="[[currentWord]]" on-correct="nextWord"></spelling-word-input>
+      <div buttons>
+        <iron-icon icon="av:replay" on-click="repeatWord"></iron-icon>
+        <iron-icon icon="help" on-click="spellWord"></iron-icon>
+      </div>
+      <paper-slider id="slider" value="{{currentIndex}}" max="[[_length(spellingList, currentList)]]"
+                    pressed="{{isSliderPressed}}" pin
+                    on-change="_handleIndexChange"
+                    immediate-value="{{_immediateSliderValue}}"></paper-slider>
+      <div slider-word pressed$="[[isSliderPressed]]">[[_currentSliderWord(spellingList, currentList, _immediateSliderValue)]]</div>
+    </div>
+
+  </template>
+</dom-module>
+<script>
+(function() {
+
+  Polymer({
+    is: 'spelling-list',
+
+    properties: {
+      spellingList: Array,
+      currentWord: {
+        type: String,
+        readOnly: true
+      },
+      currentIndex: {
+        type: Number,
+        value: 0
+      },
+      currentList: {
+        type: Number,
+        value: 0
+      },
+      isSliderPressed: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false
+      },
+      _immediateSliderValue: {
+        type: Number
+      }
+
+    },
+
+    handleResponse: function (event, data) {
+      //this.spellingList = _.shuffle(this.spellingList);
+      this.currentIndex = 0;
+      this.startWord();
+    },
+    handleError: function (event, data) {
+      console.error({event: event, data: data});
+    },
+    startWord: function () {
+      this._setCurrentWord(this.spellingList[this.currentList][this.currentIndex]);
+      this.$.spellingWordInput.focus();
+      console.debug('The word is "' + this.currentWord + '."');
+    },
+    nextWord: function () {
+      var nextIndex = this.currentIndex + 1;
+      if (nextIndex >= this.spellingList[this.currentList].length) {
+        this.currentList += 1;
+        if (this.currentList >= this.spellingList.length) {
+          this.currentList = 0;
+        }
+        nextIndex = 0;
+      }
+      this.currentIndex = nextIndex;
+      this.startWord();
+    },
+    repeatWord: function () {
+      this.$.spellingWord.speak();
+      this.$.spellingWordInput.focus();
+    },
+    spellWord: function () {
+      this.$.spellingWord.spell();
+    },
+    _length: function () {
+      return this.spellingList[this.currentList].length -1;
+    },
+    _handleListChange: function () {
+      if (this.spellingList) {
+        this.currentIndex = 0;
+        this.startWord();
+      }
+    },
+    _handleIndexChange: function () {
+      if (this.spellingList) {
+        this.startWord();
+      }
+    },
+    _currentSliderWord: function () {
+      var self = this;
+
+      if (self._timeout) {
+        clearTimeout(self._timeout);
+      }
+      self.isSliderPressed = this.$.slider.pressed;
+      if (self.isSliderPressed) {
+        self._timeout = setTimeout(function () {
+          self.isSliderPressed = false;
+        }, 2000);
+      }
+
+      return this.spellingList[this.currentList][this._immediateSliderValue];
+    },
+    _listName: function (index) {
+      return 'List ' + (index+1);
+    }
+
+  });
+})();
+</script>
