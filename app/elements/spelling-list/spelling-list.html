@@ -163,11 +163,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     nextWord: function () {
       var nextIndex = this.currentIndex + 1;
       if (nextIndex >= this.spellingList[this.currentList].length) {
-        this.currentList += 1;
-        if (this.currentList >= this.spellingList.length) {
-          this.currentList = 0;
+        var nextList = this.currentList + 1;
+        if (nextList >= this.spellingList.length) {
+          nextList = 0;
         }
         nextIndex = 0;
+        this.currentList = nextList;
       }
       this.currentIndex = nextIndex;
       this.startWord();
