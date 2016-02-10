@@ -21,6 +21,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 <script>
 (function() {
+  /* global SpeechSynthesisUtterance */
+
+  var _msg = new SpeechSynthesisUtterance();
+  _msg.rate = 0.75; // 0.1 to 10
+
   Polymer({
     is: 'spelling-word',
 
@@ -37,31 +42,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     listeners: {
     },
 
+    ready: function () {
+    },
+
     speak: function () {
       if (this.word) {
-        var msg = this.msg = new SpeechSynthesisUtterance();
-        var voices = window.speechSynthesis.getVoices();
-        // msg.voice = voices[0];
-        // msg.voiceURI = 'native';
-        // msg.volume = 1; // 0 to 1
-        msg.rate = .75; // 0.1 to 10
-        // msg.pitch = 1; // 0 to 2
-        //msg.text = 'the square root of [[pbas +4]] 2 [[char LTRL]]a[[char NORM]] to the [[pbas +4]] 14 [[char LTRL]]x[[char NORM]]';
-
-        msg.text = 'The word is [[emph +]]' + this.word + '[[emph -]].';
-        msg.lang = 'en-US';
-
-        msg.onend = function (event) {
-          //console.error('Finished in ' + event.elapsedTime + ' seconds.');
-        };
-
-        window.speechSynthesis.speak(msg);
+        _msg.text = 'The word is [[emph +]]' + this.word + '[[emph -]].';
+        window.speechSynthesis.speak(_msg);
       }
     },
     spell: function () {
-      var msg = this.msg;
-      msg.text = '[[char LTRL]]' + this.word + '[[char NORM]] ' + this.word + '.';
-      window.speechSynthesis.speak(msg);
+      _msg.text = '[[char LTRL]]' + this.word + '[[char NORM]] ' + this.word + '.';
+      window.speechSynthesis.speak(_msg);
     }
   });
 })();

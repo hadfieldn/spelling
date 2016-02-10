@@ -46,6 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 <script>
 (function() {
+  /* global SpeechSynthesisUtterance */
   Polymer({
     is: 'spelling-word-input',
 
@@ -69,10 +70,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     ready: function () {
       this.msg = new SpeechSynthesisUtterance();
     },
-    _handleNewWord: function (newVal, oldVal) {
+    _handleNewWord: function () {
       this._setIsCorrect(false);
     },
-    _handleSubmit: function (event, data) {
+    _handleSubmit: function () {
       if (this.response === this.word) {
         this.async(function () {
           console.log('Correct!');
